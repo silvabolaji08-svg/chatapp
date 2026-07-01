@@ -1,0 +1,138 @@
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { MessageCircle } from 'lucide-react'
+
+const API = 'http://localhost:5001'
+
+export default function Register() {
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const { login } = useAuth()
+  const navigate = useNavigate()
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+
+    if (formData.password !== formData.confirmPassword) {
+      return setError('Passwords do not match')
+    }
+
+    setLoading(true)
+
+    try {
+      const res = await fetch(`${API}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: formData.name, email: formData.email, password: formData.password }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message || 'Registration failed')
+      login(data)
+      navigate('/')
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{
+      minHeight: '100vh', background: 'var(--bg)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '2rem',
+    }}>
+      <div style={{ width: '100%', maxWidth: 400 }}>
+
+        {/* Logo */}
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <div style={{
+            width: 70, height: 70, borderRadius: '50%',
+            background: 'var(--accent)', display: 'flex',
+            alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 1rem',
+          }}>
+            <MessageCircle size={35} color="#fff" />
+          </div>
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: '0.3rem' }}>
+            Create Account
+          </h1>
+          <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>
+            Join and start chatting today
+          </p>
+        </div>
+
+        {/* Form */}
+        <div style={{
+          background: 'var(--bg2)', borderRadius: 16,
+          padding: '2rem', border: '1px solid var(--border)',
+        }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div>
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: '0.4rem' }}>
+                Full Name
+              </label>
+              <input type="text" name="name" value={formData.name}
+                onChange={handleChange} placeholder="John Doe" required />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: '0.4rem' }}>
+                Email
+              </label>
+              <input type="email" name="email" value={formData.email}
+                onChange={handleChange} placeholder="john@example.com" required />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: '0.4rem' }}>
+                Password
+              </label>
+              <input type="password" name="password" value={formData.password}
+                onChange={handleChange} placeholder="••••••••" required minLength={6} />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: '0.4rem' }}>
+                Confirm Password
+              </label>
+              <input type="password" name="confirmPassword" value={formData.confirmPassword}
+                onChange={handleChange} placeholder="••••••••" required />
+            </div>
+
+            {error && (
+              <div style={{
+                background: 'rgba(255,77,109,0.1)', border: '1px solid var(--danger)',
+                borderRadius: 8, padding: '0.7rem 1rem',
+                fontSize: '0.82rem', color: 'var(--danger)',
+              }}>
+                ❌ {error}
+              </div>
+            )}
+
+            <button type="submit" disabled={loading} style={{
+              background: 'var(--accent)', color: '#fff', border: 'none',
+              borderRadius: 50, padding: '0.85rem', fontWeight: 700,
+              fontSize: '0.92rem', marginTop: '0.5rem',
+              opacity: loading ? 0.7 : 1, transition: 'all 0.2s',
+            }}>
+              {loading ? 'Creating account…' : 'Create Account'}
+            </button>
+          </form>
+        </div>
+
+        <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.85rem', color: 'var(--muted)' }}>
+          Already have an account?{' '}
+          <Link to="/login" style={{ color: 'var(--accent)', fontWeight: 600 }}>Sign in</Link>
+        </p>
+      </div>
+    </div>
+  )
+}
