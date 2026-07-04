@@ -25,7 +25,7 @@ interface Chat {
   latestMessage?: { content: string; createdAt: string }
   unreadCount?: number
 }
-
+                                                               
 export default function ChatPage() {
   const { user, logout } = useAuth()
   const [chats, setChats] = useState<Chat[]>([])
@@ -81,7 +81,33 @@ export default function ChatPage() {
       .catch(() => setUsers([]))
   }, [user])
 
-  const selectChat = async (chat: Chat) => {
+  
+useEffect(() => {
+  if (!selectedChat || !user) return
+  const interval = setInterval(async () => {
+    const res = await fetch(`${API}/api/messages/${selectedChat._id}`, {
+      headers: { Authorization: `Bearer ${user.token}` }
+    })
+    const data = await res.json()
+    if (Array.isArray(data)) setMessages(data)
+  }, 5000)
+  return () => clearInterval(interval)
+}, [selectedChat, user])
+
+
+useEffect(() => {
+  if (!user) return
+  const interval = setInterval(async () => {
+    const res = await fetch(`${API}/api/chats`, {
+      headers: { Authorization: `Bearer ${user.token}` }
+    })
+    const data = await res.json()
+    if (Array.isArray(data)) setChats(data)
+  }, 10000)
+  return () => clearInterval(interval)
+}, [user])
+
+ const selectChat = async (chat: Chat) => {
     setSelectedChat(chat)
     if (!user) return
     socket?.emit('join-chat', chat._id)
