@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { MessageCircle } from 'lucide-react'
 
-const API = 'http://localhost:5001'
+const API = 'https://chatapp-backend-i946.vercel.app'
 
 export default function Login() {
   const [formData, setFormData] = useState({ email: '', password: '' })

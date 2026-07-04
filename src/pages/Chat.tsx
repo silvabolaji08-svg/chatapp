@@ -7,7 +7,7 @@ import {
   MessageCircle, LogOut, Sun, Moon,
 } from 'lucide-react'
 
-const API = 'http://localhost:5001'
+const API = 'https://chatapp-backend-i946.vercel.app'
 
 interface Message {
   _id: string
@@ -47,7 +47,7 @@ export default function ChatPage() {
     document.documentElement.dataset.theme = theme
   }, [theme])
 
-  useEffect(() => {
+  useEffect(() => { 
     if (!user) return
     const newSocket = io(API, { query: { userId: user._id } })
     setSocket(newSocket)
